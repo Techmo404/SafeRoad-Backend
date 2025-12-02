@@ -8,25 +8,22 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
-# Services
+
 from services.incidents_service import IncidentService
 from services.weather_service import WeatherService
 from services.traffic_service import TrafficService
 
-# ML
+
 from ml.model_training import predict_from_model
 
-# Auth
+
 from auth_utils import verify_token
 
-# Load environment variables
 load_dotenv()
 
 print("🔧 WEATHER KEY DETECTADA:", os.getenv("WEATHER_API_KEY"))
 
-# -------------------------------------------------
-# 🔥 Inicializar Firebase
-# -------------------------------------------------
+#inicio de firebase
 cred = credentials.Certificate("firebase-admin.json")
 
 if not firebase_admin._apps:
@@ -34,14 +31,10 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# -------------------------------------------------
-# 🚦 Crear instancia FastAPI
-# -------------------------------------------------
+#creacion de fast api
 app = FastAPI(title="SafeRoad API", version="1.0")
 
-# -------------------------------------------------
-# 🌍 CORS
-# -------------------------------------------------
+#cors
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
@@ -50,10 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -------------------------------------------------
-# 🧪 ENDPOINTS API
-# -------------------------------------------------
-
+#endpoints
 @app.get("/")
 def root():
     return {"status": "API ONLINE 🚦"}
@@ -92,7 +82,7 @@ async def get_history(user=Depends(verify_token)):
         "records": history
     }
 
-# ------------------ 🔥 AI Risk Engine ---------------------
+# ver los riesgos
 @app.post("/risk-check")
 async def risk_check(
     user=Depends(verify_token),
@@ -115,14 +105,14 @@ async def risk_check(
         "jam_factor": traffic.get("jam_factor", 0),
     }
 
-    # -------- TRY AI FIRST --------
+
     prediction = predict_from_model(user.get("uid"), ai_input)
 
     if "predicted_label" in prediction:
         risk_result = prediction["predicted_label"]
         model_used = "Machine Learning"
     else:
-        # fallback si no hay modelo
+
         model_used = "Fallback Rules"
 
         if ai_input["visibility"] < 4000 or ai_input["wind_speed"] > 12:
@@ -144,14 +134,14 @@ async def risk_check(
         "source": "AI powered"
     }
 
-    # Guardar en DB
+    # guardado en db
     result["id"] = db.collection("records").add(result)[1].id
 
     return result
 
 
 
-# ------------------ INCIDENTS API ---------------------
+# incidentes API
 @app.get("/incidents")
 async def get_incidents(user=Depends(verify_token), lat: float = None, lng: float = None):
     
@@ -166,14 +156,11 @@ async def get_incidents(user=Depends(verify_token), lat: float = None, lng: floa
     }
 
 
-# ------------------ IMPORT ROUTERS ---------------------
 from routes.model_router import router as model_router
 app.include_router(model_router)
 
 
-# -------------------------------------------------
-# 🔐 CONFIGURAR SWAGGER PARA TOKEN JWT
-# -------------------------------------------------
+#Token
 security = HTTPBearer()
 
 def custom_openapi():

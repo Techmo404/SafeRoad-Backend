@@ -9,7 +9,7 @@ router = APIRouter(prefix="/model", tags=["AI Model"])
 db = firestore.client()
 
 
-# ------------------ 📌 1) Obtener dataset guardado ---------------------
+
 @router.get("/dataset")
 async def get_training_data(user=Depends(verify_token)):
     docs = db.collection("records").where("uid", "==", user.get("uid")).stream()
@@ -40,14 +40,13 @@ async def get_training_data(user=Depends(verify_token)):
     }
 
 
-# ------------------ 🤖 2) Entrenar IA ---------------------
+#entrenar ia
 @router.post("/train")
 async def train(user=Depends(verify_token)):
     result = train_model(user.get("uid"))
     return result
 
-
-# ------------------ 🔮 3) Predecir usando IA entrenada ---------------------
+#predecir usando ia
 @router.post("/predict")
 async def predict(location: dict, user=Depends(verify_token)):
 
@@ -57,11 +56,11 @@ async def predict(location: dict, user=Depends(verify_token)):
     if lat is None or lng is None:
         raise HTTPException(400, "Debe enviar coordenadas válidas")
 
-    # Obtener datos reales
+    # obtener datos reales
     weather = WeatherService().get_weather(lat, lng)
     traffic = TrafficService().get_traffic(lat, lng)
 
-    # Preparar estructura para IA
+    # preparar estructura para ia
     input_data = {
         "temperature": weather.get("main", {}).get("temp"),
         "visibility": weather.get("visibility", 10000),

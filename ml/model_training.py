@@ -36,7 +36,6 @@ def load_dataset(uid: str):
 def generate_label(row):
     """Crea una etiqueta basada en lógica heurística cuando no existe."""
     
-    # Pequeña matriz de riesgo
     if row["visibility"] < 4000 or row["wind_speed"] > 12 or row["traffic_speed"] < 20:
         return "Alto"
     if row["traffic_speed"] < 50 or row["wind_speed"] > 8:
@@ -48,18 +47,18 @@ def generate_label(row):
 def train_model(uid: str):
     df = load_dataset(uid)
 
-    # Verificación mínima
+
     if df.shape[0] < 30:
         return {"error": "❌ Se requieren mínimo 30 registros para entrenar."}
 
-    # Reemplazar etiquetas faltantes
+
     df["risk_label"] = df["risk_label"].fillna(df.apply(generate_label, axis=1))
 
-    # Features y target
+
     X = df[["temperature", "visibility", "wind_speed", "traffic_speed", "jam_factor"]]
     y = df["risk_label"]
 
-    # Train test split
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=42
     )
@@ -67,7 +66,7 @@ def train_model(uid: str):
     model = RandomForestClassifier(n_estimators=200, random_state=42)
     model.fit(X_train, y_train)
 
-    # Accuracy simple
+  
     accuracy = round(model.score(X_test, y_test) * 100, 2)
 
     model_path = f"ml/model_{uid}.pkl"

@@ -5,7 +5,6 @@ class TrafficService:
 
     BASE_URL = "https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json"
 
-    # Límites esperados según tipo de calle
     ROAD_LIMITS = {
         "MOTORWAY": 120,
         "TRUNK": 100,
@@ -43,11 +42,11 @@ class TrafficService:
             road_type = segment.get("roadType", "UNKNOWN").upper()
             expected_limit = self.ROAD_LIMITS.get(road_type, 50)
 
-            # 🧠 Corrección: si TomTom reporta 100+ en zonas residenciales → ajustar
+
             if speed and speed > expected_limit:
                 speed = expected_limit
 
-            # Si no viene jamFactor → calcularlo manualmente
+
             jam_factor = segment.get("jamFactor")
             if jam_factor is None and speed and expected_limit:
                 jam_factor = round((1 - (speed / expected_limit)) * 10, 2)

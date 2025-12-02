@@ -22,7 +22,7 @@ async def verify_token(request: Request):
         return decoded
 
     except Exception as e:
-        print("❌ Error token:", e)
+        print(" Error token:", e)
         raise HTTPException(
             status_code=401,
             detail="Token inválido o expirado"

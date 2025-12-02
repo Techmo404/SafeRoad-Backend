@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-# -------------------------
-# 🔧 Clase base
-# -------------------------
+#clase base
 class AlertCommand(ABC):
     @abstractmethod
     def execute(self, context):
@@ -11,9 +9,7 @@ class AlertCommand(ABC):
         pass
 
 
-# -------------------------
-# 🌦 Evaluación de clima
-# -------------------------
+#Evaluacion clima
 class WeatherRiskCommand(AlertCommand):
     def execute(self, ctx):
 
@@ -24,8 +20,7 @@ class WeatherRiskCommand(AlertCommand):
         wind_speed = weather.get("wind", {}).get("speed", 0)
 
         alerts = []
-        score = 0  # Máximo 30 puntos
-
+        score = 0  
         if main in ["rain", "snow", "thunderstorm"]:
             alerts.append(f"⚠️ Clima peligroso: {main}")
             score += 12
@@ -49,9 +44,7 @@ class WeatherRiskCommand(AlertCommand):
         return {"score": min(score, 30), "alerts": alerts}
 
 
-# -------------------------
-# 🚦 Evaluación de tráfico
-# -------------------------
+#evaluacion trafico
 class TrafficRiskCommand(AlertCommand):
     def execute(self, ctx):
 
@@ -66,8 +59,7 @@ class TrafficRiskCommand(AlertCommand):
 
         alerts = []
 
-        score = int(min(jam or 0, 10) * 5)  # Máximo 50 pts
-
+        score = int(min(jam or 0, 10) * 5)  
         if jam is not None:
             if jam >= 8:
                 alerts.append("🚨 Congestión severa")
@@ -76,7 +68,7 @@ class TrafficRiskCommand(AlertCommand):
             elif jam >= 3:
                 alerts.append("⚠ Circulación lenta")
 
-        # Datos poco confiables → penalización
+        # Datos poco confiable
         if confidence < 0.50:
             alerts.append("📡 Datos poco confiables — verifique tráfico real")
             score += 5
